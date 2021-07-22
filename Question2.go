@@ -12,13 +12,14 @@ type RatingModule struct{
 	highestRating int
 	mutex sync.Mutex
 }
-func takeRating(student *sync.WaitGroup, lowestRating int, highestRating int, mutex *sync.Mutex,totalRating *uint64){
+func (rating_module *RatingModule) takeRating(student *sync.WaitGroup,totalRating *uint64){
 	defer student.Done()
-	mutex.Lock()
+	rating_module.mutex.Lock()
 	rand.Seed(time.Now().UnixNano())
-	currentStudentRating := uint64(lowestRating) +  uint64(rand.Intn(highestRating - lowestRating + 1))
+	currentStudentRating := uint64(rating_module.lowestRating) +
+				uint64(rand.Intn(rating_module.highestRating - rating_module.lowestRating + 1))
 	*totalRating += currentStudentRating
-	mutex.Unlock()
+	rating_module.mutex.Unlock()
 
 }
 func (rating_module *RatingModule) calculateAverageRating(totalRating uint64) float64{
@@ -32,10 +33,11 @@ func main(){
 	var totalRating uint64//atomic counter for accumulating Rating by each student
 	for currentStudent := 1; currentStudent <= rating_module.numberOfStudent; currentStudent++{
 		student.Add(1)
-		go takeRating(&student,rating_module.lowestRating,rating_module.highestRating,&rating_module.mutex,&totalRating)
+		go rating_module.takeRating(&student,&totalRating)
 	}
 	student.Wait()
 	rating_module.calculateAverageRating(totalRating)
+	//totalAverageRating := float64(totalRating/uint64(rating_module.numberOfStudent))
 	fmt.Println(rating_module.calculateAverageRating(totalRating))
 
 }
