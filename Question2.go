@@ -18,6 +18,7 @@ func (rating_module *RatingModule) takeRating(student *sync.WaitGroup,totalRatin
 	rand.Seed(time.Now().UnixNano())
 	currentStudentRating := uint64(rating_module.lowestRating) +
 				uint64(rand.Intn(rating_module.highestRating - rating_module.lowestRating + 1))
+	fmt.Println(currentStudentRating)
 	*totalRating += currentStudentRating
 	rating_module.mutex.Unlock()
 
@@ -36,8 +37,8 @@ func main(){
 		go rating_module.takeRating(&student,&totalRating)
 	}
 	student.Wait()
+	fmt.Println("Total Rating after ending process: ",totalRating)
 	rating_module.calculateAverageRating(totalRating)
-	//totalAverageRating := float64(totalRating/uint64(rating_module.numberOfStudent))
-	fmt.Println(rating_module.calculateAverageRating(totalRating))
+	fmt.Println("Total Average Rating after ending process: ",rating_module.calculateAverageRating(totalRating))
 
 }
